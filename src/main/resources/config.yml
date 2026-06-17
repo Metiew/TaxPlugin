@@ -1,0 +1,26 @@
+enabled: false
+tax-time: "20:00"
+tax-percentage: 10.0
+last-tax-run: 0
+anti-evasion-window-minutes: 10
+anti-evasion-threshold: 32
+item-weights:
+  DIAMOND: 100
+  EMERALD: 95
+  NETHERITE_SCRAP: 100
+  NETHERITE_INGOT: 100
+  ANCIENT_DEBRIS: 90
+  GOLD_INGOT: 70
+  IRON_INGOT: 50
+  COAL: 30
+  REDSTONE: 40
+  LAPIS_LAZULI: 45
+  COBBLESTONE: 5
+  STONE: 5
+  DIRT: 1
+  WHEAT_SEEDS: 1
+  OAK_SAPLING: 1
+exempt-materials:
+  - TOTEM_OF_UNDYING
+  - ELYTRA
+bank-gui-size: 54
