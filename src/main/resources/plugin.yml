@@ -1,0 +1,19 @@
+name: TaxPlugin
+version: '1.0.0'
+main: com.server.taxplugin.TaxPlugin
+api-version: '1.21'
+author: ServerAdmin
+description: Sistema di tassazione su item posseduti, con banca virtuale per giocatore.
+
+commands:
+  tax:
+    description: Comando principale del plugin tasse
+    usage: /tax <enable|disable|run|setpercent|weights|bank|status>
+
+permissions:
+  taxplugin.admin:
+    description: Permette di gestire il plugin delle tasse
+    default: op
+  taxplugin.bank:
+    description: Permette di accedere alla propria banca virtuale
+    default: true
