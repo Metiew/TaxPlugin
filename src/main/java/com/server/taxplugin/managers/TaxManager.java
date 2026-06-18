@@ -46,9 +46,10 @@ public class TaxManager {
         }
 
         plugin.getLogger().info("Tassazione completata: " + taxedCount + " giocatori coinvolti.");
+        final int finalTaxedCount = taxedCount;
         Bukkit.getOnlinePlayers().stream()
                 .filter(p -> p.hasPermission("taxplugin.admin"))
-                .forEach(p -> p.sendMessage("§e[TaxPlugin] §aTassazione giornaliera completata per " + taxedCount + " giocatori."));
+                .forEach(p -> p.sendMessage("§e[TaxPlugin] §aTassazione giornaliera completata per " + finalTaxedCount + " giocatori."));
 
         Bukkit.getOnlinePlayers().forEach(p ->
                 p.sendMessage("§e[TaxPlugin] §7È stata applicata la tassa giornaliera. Controlla la tua banca virtuale con /tax bank."));
