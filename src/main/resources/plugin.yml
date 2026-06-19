@@ -9,6 +9,10 @@ commands:
   tax:
     description: Comando principale del plugin tasse
     usage: /tax <enable|disable|run|setpercent|weights|bank|status>
+  block:
+    description: Apre la GUI per esentare un set di armatura specifico di un giocatore dalla tassazione
+    usage: /block
+    permission: taxplugin.admin
 
 permissions:
   taxplugin.admin:
