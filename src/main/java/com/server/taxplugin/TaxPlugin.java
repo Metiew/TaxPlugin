@@ -1,7 +1,9 @@
 package com.server.taxplugin;
 
+import com.server.taxplugin.commands.BlockCommand;
 import com.server.taxplugin.commands.TaxCommand;
 import com.server.taxplugin.listeners.BankGUIListener;
+import com.server.taxplugin.listeners.BlockGUIListener;
 import com.server.taxplugin.listeners.ChestTrackingListener;
 import com.server.taxplugin.listeners.PercentageGUIListener;
 import com.server.taxplugin.listeners.PlayerLossListener;
@@ -52,14 +54,22 @@ public class TaxPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new BankGUIListener(this), this);
         getServer().getPluginManager().registerEvents(new WeightsGUIListener(this), this);
         getServer().getPluginManager().registerEvents(new PercentageGUIListener(this), this);
+        getServer().getPluginManager().registerEvents(new BlockGUIListener(this), this);
     }
 
     private void registerCommands() {
-        var command = getCommand("tax");
-        if (command != null) {
-            command.setExecutor(new TaxCommand(this));
+        var taxCommand = getCommand("tax");
+        if (taxCommand != null) {
+            taxCommand.setExecutor(new TaxCommand(this));
         } else {
             getLogger().severe("Comando 'tax' non trovato nel plugin.yml! Controlla la configurazione.");
+        }
+
+        var blockCommand = getCommand("block");
+        if (blockCommand != null) {
+            blockCommand.setExecutor(new BlockCommand(this));
+        } else {
+            getLogger().severe("Comando 'block' non trovato nel plugin.yml! Controlla la configurazione.");
         }
     }
 
