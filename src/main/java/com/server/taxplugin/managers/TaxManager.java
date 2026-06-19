@@ -24,10 +24,12 @@ public class TaxManager {
 
     private final TaxPlugin plugin;
     private final DatabaseManager db;
+    private final ExemptItemTagger tagger;
 
     public TaxManager(TaxPlugin plugin, DatabaseManager db) {
         this.plugin = plugin;
         this.db = db;
+        this.tagger = new ExemptItemTagger(plugin);
     }
 
     public void runTaxation() {
@@ -81,6 +83,7 @@ public class TaxManager {
             for (ItemStack item : source.inventory.getContents()) {
                 if (item == null || item.getType() == Material.AIR) continue;
                 if (isFood(item.getType()) || exempt.contains(item.getType())) continue;
+                if (tagger.isExempt(item)) continue;
                 int weight = weights.getOrDefault(item.getType().name(), 0);
                 totalValue += (double) weight * item.getAmount();
             }
@@ -98,6 +101,7 @@ public class TaxManager {
                 ItemStack item = contents[slot];
                 if (item == null || item.getType() == Material.AIR) continue;
                 if (isFood(item.getType()) || exempt.contains(item.getType())) continue;
+                if (tagger.isExempt(item)) continue;
                 int weight = weights.getOrDefault(item.getType().name(), 0);
                 if (weight <= 0) continue;
                 allStacks.add(new WeightedStack(source.inventory, slot, item, weight));
@@ -137,6 +141,10 @@ public class TaxManager {
 
     private boolean isFood(Material material) {
         return material.isEdible();
+    }
+
+    public ExemptItemTagger getTagger() {
+        return tagger;
     }
 
     private Map<String, Integer> loadWeights() {
