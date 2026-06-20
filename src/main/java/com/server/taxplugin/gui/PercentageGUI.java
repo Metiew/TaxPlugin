@@ -9,10 +9,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.List;
+import java.util.UUID;
 
 public class PercentageGUI {
 
-    public static final String TITLE = "§6Percentuale Tassa Globale";
+    public static final String TITLE_PREFIX = "§6Tassa personale - ";
 
     private static final int SLOT_MINUS_5 = 1;
     private static final int SLOT_MINUS_1 = 3;
@@ -21,13 +22,18 @@ public class PercentageGUI {
     private static final int SLOT_PLUS_5 = 7;
 
     private final TaxPlugin plugin;
+    private final UUID targetPlayerId;
+    private final String targetPlayerName;
 
-    public PercentageGUI(TaxPlugin plugin) {
+    public PercentageGUI(TaxPlugin plugin, UUID targetPlayerId, String targetPlayerName) {
         this.plugin = plugin;
+        this.targetPlayerId = targetPlayerId;
+        this.targetPlayerName = targetPlayerName;
     }
 
-    public void open(Player player) {
-        Inventory inv = Bukkit.createInventory(null, 9, TITLE);
+    public void open(Player viewer) {
+        String title = TITLE_PREFIX + targetPlayerName;
+        Inventory inv = Bukkit.createInventory(null, 9, title);
 
         inv.setItem(SLOT_MINUS_5, namedItem(Material.RED_CONCRETE, "§c-5%"));
         inv.setItem(SLOT_MINUS_1, namedItem(Material.RED_STAINED_GLASS_PANE, "§c-1%"));
@@ -35,22 +41,28 @@ public class PercentageGUI {
         inv.setItem(SLOT_PLUS_1, namedItem(Material.LIME_STAINED_GLASS_PANE, "§a+1%"));
         inv.setItem(SLOT_PLUS_5, namedItem(Material.LIME_CONCRETE, "§a+5%"));
 
-        player.openInventory(inv);
+        viewer.openInventory(inv);
     }
 
     public void adjustPercentage(double delta) {
-        double current = plugin.getConfig().getDouble("tax-percentage", 10.0);
+        double current = getCurrentPercentage();
         double updated = Math.max(0, Math.min(100, current + delta));
-        plugin.getConfig().set("tax-percentage", updated);
-        plugin.saveConfig();
+        plugin.getDatabaseManager().setPlayerTaxOverride(targetPlayerId, updated);
+    }
+
+    private double getCurrentPercentage() {
+        Double existing = plugin.getDatabaseManager().getPlayerTaxOverride(targetPlayerId);
+        if (existing != null) return existing;
+        return plugin.getConfig().getDouble("default-tax-percentage", 10.0);
     }
 
     private ItemStack displayItem() {
-        double current = plugin.getConfig().getDouble("tax-percentage", 10.0);
+        double current = getCurrentPercentage();
+
         ItemStack item = new ItemStack(Material.GOLD_INGOT);
         ItemMeta meta = item.getItemMeta();
         if (meta != null) {
-            meta.setDisplayName("§eTassa attuale: §6" + current + "%");
+            meta.setDisplayName("§eTassa di " + targetPlayerName + ": §6" + current + "%");
             meta.setLore(List.of("§7Usa i pulsanti per modificare la percentuale."));
             item.setItemMeta(meta);
         }
