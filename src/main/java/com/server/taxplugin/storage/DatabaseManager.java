@@ -78,6 +78,13 @@ public class DatabaseManager {
                     value TEXT
                 )
             """);
+
+            st.execute("""
+                CREATE TABLE IF NOT EXISTS player_tax_overrides (
+                    owner TEXT PRIMARY KEY,
+                    percentage REAL NOT NULL
+                )
+            """);
         }
     }
 
@@ -228,6 +235,43 @@ public class DatabaseManager {
             }
         } catch (SQLException e) {
             plugin.getLogger().log(Level.WARNING, "Errore lettura stato plugin", e);
+        }
+        return null;
+    }
+
+    public void setPlayerTaxOverride(UUID owner, double percentage) {
+        String sql = "INSERT INTO player_tax_overrides (owner, percentage) VALUES (?, ?) " +
+                "ON CONFLICT(owner) DO UPDATE SET percentage = excluded.percentage";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, owner.toString());
+            ps.setDouble(2, percentage);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, "Errore salvataggio override percentuale player", e);
+        }
+    }
+
+    public void removePlayerTaxOverride(UUID owner) {
+        String sql = "DELETE FROM player_tax_overrides WHERE owner = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, owner.toString());
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, "Errore rimozione override percentuale player", e);
+        }
+    }
+
+    public Double getPlayerTaxOverride(UUID owner) {
+        String sql = "SELECT percentage FROM player_tax_overrides WHERE owner = ?";
+        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+            ps.setString(1, owner.toString());
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getDouble("percentage");
+                }
+            }
+        } catch (SQLException e) {
+            plugin.getLogger().log(Level.WARNING, "Errore lettura override percentuale player", e);
         }
         return null;
     }
