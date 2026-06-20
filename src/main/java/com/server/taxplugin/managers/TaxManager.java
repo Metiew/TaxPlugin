@@ -33,7 +33,6 @@ public class TaxManager {
     }
 
     public void runTaxation() {
-        double percentage = plugin.getConfig().getDouble("tax-percentage", 10.0);
         Map<String, Integer> weights = loadWeights();
         Set<Material> exempt = loadExempt();
 
@@ -43,7 +42,7 @@ public class TaxManager {
 
         int taxedCount = 0;
         for (UUID target : targets) {
-            boolean taxed = taxPlayer(target, percentage, weights, exempt);
+            boolean taxed = taxPlayer(target, weights, exempt);
             if (taxed) taxedCount++;
         }
 
@@ -57,7 +56,10 @@ public class TaxManager {
                 p.sendMessage("§e[TaxPlugin] §7È stata applicata la tassa giornaliera. Controlla la tua banca virtuale con /tax bank."));
     }
 
-    private boolean taxPlayer(UUID target, double percentage, Map<String, Integer> weights, Set<Material> exempt) {
+    private boolean taxPlayer(UUID target, Map<String, Integer> weights, Set<Material> exempt) {
+        Double personal = db.getPlayerTaxOverride(target);
+        double percentage = personal != null ? personal : plugin.getConfig().getDouble("default-tax-percentage", 10.0);
+
         List<ItemSource> sources = new ArrayList<>();
 
         Player online = Bukkit.getPlayer(target);
