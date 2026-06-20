@@ -2,6 +2,8 @@ package com.server.taxplugin.listeners;
 
 import com.server.taxplugin.TaxPlugin;
 import com.server.taxplugin.gui.PercentageGUI;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -19,11 +21,12 @@ public class PercentageGUIListener implements Listener {
 
     @EventHandler
     public void onClick(InventoryClickEvent event) {
-        if (!PercentageGUI.TITLE.equals(event.getView().getTitle())) return;
+        String title = event.getView().getTitle();
+        if (!title.startsWith(PercentageGUI.TITLE_PREFIX)) return;
         event.setCancelled(true);
 
-        if (!(event.getWhoClicked() instanceof Player player)) return;
-        if (!player.hasPermission("taxplugin.admin")) return;
+        if (!(event.getWhoClicked() instanceof Player viewer)) return;
+        if (!viewer.hasPermission("taxplugin.admin")) return;
 
         ItemStack clicked = event.getCurrentItem();
         if (clicked == null || clicked.getType().isAir()) return;
@@ -39,8 +42,12 @@ public class PercentageGUIListener implements Listener {
             default -> { return; }
         }
 
-        PercentageGUI gui = new PercentageGUI(plugin);
+        String targetName = title.substring(PercentageGUI.TITLE_PREFIX.length());
+        OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
+        if (target.getUniqueId() == null) return;
+
+        PercentageGUI gui = new PercentageGUI(plugin, target.getUniqueId(), targetName);
         gui.adjustPercentage(delta);
-        gui.open(player);
+        gui.open(viewer);
     }
 }
