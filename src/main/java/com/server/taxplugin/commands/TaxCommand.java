@@ -4,6 +4,8 @@ import com.server.taxplugin.TaxPlugin;
 import com.server.taxplugin.gui.BankGUI;
 import com.server.taxplugin.gui.PercentageGUI;
 import com.server.taxplugin.gui.WeightsGUI;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -20,7 +22,7 @@ public class TaxCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (args.length == 0) {
-            sender.sendMessage("§eUso: /tax <enable|disable|run|setpercent|weights|bank|status>");
+            sender.sendMessage("§eUso: /tax <enable|disable|run|setpercent <player>|weights|bank|status>");
             return true;
         }
 
@@ -30,7 +32,7 @@ public class TaxCommand implements CommandExecutor {
             case "enable" -> handleEnable(sender);
             case "disable" -> handleDisable(sender);
             case "run" -> handleRun(sender);
-            case "setpercent" -> handleSetPercent(sender);
+            case "setpercent" -> handleSetPercent(sender, args);
             case "weights" -> handleWeights(sender);
             case "bank" -> handleBank(sender);
             case "status" -> handleStatus(sender);
@@ -70,13 +72,25 @@ public class TaxCommand implements CommandExecutor {
         plugin.getTaxManager().runTaxation();
     }
 
-    private void handleSetPercent(CommandSender sender) {
+    private void handleSetPercent(CommandSender sender, String[] args) {
         if (!requireAdmin(sender)) return;
         if (!(sender instanceof Player player)) {
             sender.sendMessage("§cQuesto comando richiede di essere in gioco (apre una GUI).");
             return;
         }
-        new PercentageGUI(plugin).open(player);
+        if (args.length < 2) {
+            sender.sendMessage("§cUso corretto: /tax setpercent <nome giocatore>");
+            return;
+        }
+
+        String targetName = args[1];
+        OfflinePlayer target = Bukkit.getOfflinePlayer(targetName);
+        if (!target.hasPlayedBefore() && !target.isOnline()) {
+            sender.sendMessage("§c[TaxPlugin] Nessun giocatore trovato con quel nome.");
+            return;
+        }
+
+        new PercentageGUI(plugin, target.getUniqueId(), targetName).open(player);
     }
 
     private void handleWeights(CommandSender sender) {
@@ -104,11 +118,12 @@ public class TaxCommand implements CommandExecutor {
         if (!requireAdmin(sender)) return;
         boolean enabled = plugin.getConfig().getBoolean("enabled", false);
         String time = plugin.getConfig().getString("tax-time", "20:00");
-        double percent = plugin.getConfig().getDouble("tax-percentage", 10.0);
+        double defaultPercent = plugin.getConfig().getDouble("default-tax-percentage", 10.0);
 
         sender.sendMessage("§6=== TaxPlugin Status ===");
         sender.sendMessage("§7Attivo: " + (enabled ? "§aSì" : "§cNo"));
         sender.sendMessage("§7Orario tassazione: §e" + time);
-        sender.sendMessage("§7Percentuale tassa: §e" + percent + "%");
+        sender.sendMessage("§7Percentuale di default (per chi non ha override): §e" + defaultPercent + "%");
+        sender.sendMessage("§7Usa /tax setpercent <player> per impostare la tassa di un singolo giocatore.");
     }
 }
